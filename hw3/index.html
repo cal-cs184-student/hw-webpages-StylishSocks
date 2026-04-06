@@ -27,7 +27,7 @@
 	</head>
 	<body>
 		<div class="container">
-		<h1>CS184/284A Spring 2025 Homework 3 Write-Up</h1>
+		<h1>CS184 Spring 2025 Homework 3 Write-Up</h1>
 		<div style="text-align: center;">Names: Spencer Nelson</div>
 
 		<br>
@@ -37,7 +37,7 @@
 
 		<h2>Overview</h2>
 		<p>
-		In this homework I built a physically-based path tracer from scratch, which was honestly one of the most involved projects I've done in this class. I started by generating camera rays and implementing ray-primitive intersections for triangles and spheres, then moved on to building a BVH acceleration structure that made rendering go from taking 40+ seconds to under a second. After that I implemented direct lighting using both hemisphere sampling and importance sampling, and then extended it to full global illumination with recursive bounces and Russian Roulette termination. Finally I added adaptive sampling to concentrate samples where they're actually needed. The biggest thing I took away from this project is how much visual richness comes from those indirect bounces of light — stuff like color bleeding and soft shadows that rasterization just can't replicate without expensive hacks.
+		In this homework I built a physically-based path tracer from scratch, which was honestly one of the most involved projects I've done in this class. I started by generating camera rays and implementing ray-primitive intersections for triangles and spheres, then moved on to building a BVH acceleration structure that made rendering go from taking 40+ seconds to under a second. After that I implemented direct lighting using both hemisphere sampling and importance sampling, and then extended it to full global illumination with recursive bounces and Russian Roulette termination. Finally I added adaptive sampling to concentrate samples where they're actually needed. The biggest thing I took away from this project is how much visual richness comes from those indirect bounces of light, stuff like color bleeding and soft shadows that rasterization just can't replicate without expensive hacks.
 		</p>
 
 		<h2>Part 1: Ray Generation and Scene Intersection</h2>
@@ -60,17 +60,17 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/CBempty.png" width="400px"/>
-				  <figcaption>CBempty.dae — Cornell box with normal shading</figcaption>
+				  <figcaption>CBempty.dae ... Cornell box with normal shading</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/CBspheres.png" width="400px"/>
-				  <figcaption>CBspheres_lambertian.dae — Cornell box with spheres</figcaption>
+				  <figcaption>CBspheres_lambertian.dae ... Cornell box with spheres</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/banana.png" width="400px"/>
-				  <figcaption>banana.dae — normal shading on a banana mesh</figcaption>
+				  <figcaption>banana.dae ... normal shading on a banana mesh</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -90,29 +90,29 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/maxplanck.png" width="400px"/>
-				  <figcaption>maxplanck.dae — 50,801 primitives, rendered in 0.0902s</figcaption>
+				  <figcaption>maxplanck.dae ... 50,801 primitives, rendered in 0.0902s</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/CBlucy.png" width="400px"/>
-				  <figcaption>CBlucy.dae — 133,796 primitives, rendered in 0.0814s</figcaption>
+				  <figcaption>CBlucy.dae ... 133,796 primitives, rendered in 0.0814s</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/cow.png" width="400px"/>
-				  <figcaption>cow.dae — 5,856 primitives, rendered in 0.0753s</figcaption>
+				  <figcaption>cow.dae ... 5,856 primitives, rendered in 0.0753s</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
 
 		<p>
-		The speedup from BVH was honestly insane to see in practice. The cow mesh took about 40 seconds without BVH according to the reference, but with my BVH it rendered in 0.0753 seconds — that's over 500x faster. maxplanck with 50k primitives took 0.09 seconds and CBlucy with 133k primitives took 0.08 seconds. Without BVH those would have taken many minutes. The reason is that BVH brings intersection complexity down from O(n) to O(log n) by letting us skip huge groups of primitives that a ray clearly can't hit.
+		The speedup from BVH was honestly insane to see in practice. The cow mesh took about 40 seconds without BVH according to the reference, but with my BVH it rendered in 0.0753 seconds. That's over 500x faster. maxplanck with 50k primitives took 0.09 seconds and CBlucy with 133k primitives took 0.08 seconds. Without BVH those would have taken many minutes. The reason is that BVH brings intersection complexity down from O(n) to O(log n) by letting us skip huge groups of primitives that a ray clearly can't hit.
 		</p>
 
 		<h2>Part 3: Direct Illumination</h2>
 		<p>
-		I implemented two approaches for direct lighting. My first approach was uniform hemisphere sampling — for each hit point I sample num_samples directions uniformly over the hemisphere, cast a shadow ray in each direction, and check if it hits a light source. If it does, I apply the reflection equation: multiply the BSDF value by the light's emission and the cosine of the angle, then divide by the PDF which is 1/(2*PI) for uniform sampling. I average everything over all samples.
+		I implemented two approaches for direct lighting. My first approach was uniform hemisphere sampling. For each hit point I sample num_samples directions uniformly over the hemisphere, cast a shadow ray in each direction, and check if it hits a light source. If it does, I apply the reflection equation: multiply the BSDF value by the light's emission and the cosine of the angle, then divide by the PDF which is 1/(2*PI) for uniform sampling. I average everything over all samples.
 		</p>
 		<p>
 		My second approach was importance sampling, which I liked a lot more. Instead of sampling random directions, I loop over every light in the scene and sample directions directly toward it using sample_L. This gives me the direction, distance, and PDF for each sample. I cast a shadow ray toward the light and if nothing blocks it, I apply the reflection equation using the BSDF, the light's radiance, the cosine term, and the PDF. For point lights I only sample once since every sample would be identical anyway.
@@ -124,11 +124,11 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/bunny_H_64_32.png" width="400px"/>
-				  <figcaption>Hemisphere sampling — 64 samples/pixel, 32 light rays</figcaption>
+				  <figcaption>Hemisphere sampling ... 64 samples/pixel, 32 light rays</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/bunny_64_32.png" width="400px"/>
-				  <figcaption>Importance sampling — 64 samples/pixel, 32 light rays</figcaption>
+				  <figcaption>Importance sampling ... 64 samples/pixel, 32 light rays</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -161,15 +161,15 @@
 		</div>
 
 		<p>
-		In my opinion the difference between hemisphere and importance sampling is really clear. With hemisphere sampling most of my sampled directions don't even hit a light so they contribute nothing — it's really wasteful. Importance sampling fixes this by going straight to the lights, so every sample actually does something useful. You can see this in the renders: hemisphere sampling is way noisier at the same sample count. The light ray comparison also shows exactly what I expected — 1 light ray gives really grainy soft shadows, and as I increase to 4, 16, then 64 the shadows get progressively smoother and more accurate.
+		In my opinion the difference between hemisphere and importance sampling is really clear. With hemisphere sampling most of my sampled directions don't even hit a light so they contribute nothing, it's really wasteful. Importance sampling fixes this by going straight to the lights, so every sample actually does something useful. You can see this in the renders: hemisphere sampling is way noisier at the same sample count. The light ray comparison also shows exactly what I expected. 1 light ray gives really grainy soft shadows, and as I increase to 4, 16, then 64 the shadows get progressively smoother and more accurate.
 		</p>
 
 		<h2>Part 4: Global Illumination</h2>
 		<p>
-		To implement indirect lighting I filled in at_least_one_bounce_radiance. At a high level, this function adds the one bounce radiance if we're accumulating bounces (isAccumBounces=true), or only at the final bounce (depth == 1) if we're not. Then I apply Russian Roulette with a continuation probability of 0.65 to randomly terminate paths — this gives us an unbiased estimator without having to trace infinite bounces. If the path continues, I sample a new direction using the BSDF's sample_f, build a new ray from the hit point, and recursively call at_least_one_bounce_radiance on the next intersection. The result gets weighted by the BSDF value, cosine term, PDF, and continuation probability. In raytrace_pixel I initialize each camera ray's depth to max_ray_depth, and each recursive call decrements it by 1.
+		To implement indirect lighting I filled in at_least_one_bounce_radiance. At a high level, this function adds the one bounce radiance if we're accumulating bounces (isAccumBounces=true), or only at the final bounce (depth == 1) if we're not. Then I apply Russian Roulette with a continuation probability of 0.65 to randomly terminate paths, which gives us an unbiased estimator without having to trace infinite bounces. If the path continues, I sample a new direction using the BSDF's sample_f, build a new ray from the hit point, and recursively call at_least_one_bounce_radiance on the next intersection. The result gets weighted by the BSDF value, cosine term, PDF, and continuation probability. In raytrace_pixel I initialize each camera ray's depth to max_ray_depth, and each recursive call decrements it by 1.
 		</p>
 		<p>
-		A note on my Part 4 renders: I spent around 14 hours rendering these locally on my PC with an older CPU, and I also discovered partway through that I had a variable error in est_radiance_global_illumination where I was calling one_bounce_radiance instead of at_least_one_bounce_radiance, which meant indirect bounces weren't being accumulated correctly in some of my early renders. I apologize if the color bleeding doesn't look fully correct in some of the images below — you can see in Part 5 that once I fixed the variable the global illumination looks exactly as expected with proper color bleeding from the walls.
+		A note on my Part 4 renders: I spent around 14 hours rendering these locally on my PC with an older CPU, and I also discovered partway through that I had a variable error in est_radiance_global_illumination where I was calling one_bounce_radiance instead of at_least_one_bounce_radiance, which meant indirect bounces weren't being accumulated correctly in some of my early renders. I apologize if the color bleeding doesn't look fully correct in some of the images below. You can see in Part 5 that once I fixed the variable the global illumination looks exactly as expected with proper color bleeding from the walls.
 		</p>
 
 		<p>Global illumination renders at 1024 samples per pixel:</p>
@@ -178,11 +178,11 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/bunny_global.png" width="400px"/>
-				  <figcaption>CBbunny.dae — global illumination, 1024 spp</figcaption>
+				  <figcaption>CBbunny.dae ... global illumination, 1024 spp</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/spheres_global.png" width="400px"/>
-				  <figcaption>CBspheres_lambertian.dae — global illumination, 1024 spp</figcaption>
+				  <figcaption>CBspheres_lambertian.dae ... global illumination, 1024 spp</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -239,7 +239,7 @@
 		</div>
 
 		<p>
-		Looking at the 2nd bounce, I can see light that has reflected off surfaces once before reaching the camera — this is what fills in the shadows under the bunny and adds soft color from the walls. The 3rd bounce adds even subtler indirect light that further softens things and brings up ambient light in areas that would otherwise be completely dark. In my opinion this is where path tracing really shows its advantage over rasterization — these multi-bounce effects are basically free through recursion, whereas in rasterization you'd need expensive approximations like ambient occlusion or screen-space reflections to even come close.
+		Looking at the 2nd bounce, I can see light that has reflected off surfaces once before reaching the camera. This is what fills in the shadows under the bunny and adds soft color from the walls. The 3rd bounce adds even subtler indirect light that further softens things and brings up ambient light in areas that would otherwise be completely dark. In my opinion this is where path tracing really shows its advantage over rasterization. These multi-bounce effects are basically free through recursion, whereas in rasterization you'd need expensive approximations like ambient occlusion or screen-space reflections to even come close.
 		</p>
 
 		<p>Accumulated bounces (isAccumBounces=true) at 1024 spp:</p>
@@ -364,28 +364,28 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/bunny_adaptive.png" width="400px"/>
-				  <figcaption>CBbunny.dae — adaptive sampling render</figcaption>
+				  <figcaption>CBbunny.dae ... adaptive sampling render</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/bunny_adaptive_rate.png" width="400px"/>
-				  <figcaption>CBbunny.dae — sampling rate image (red=high, blue=low)</figcaption>
+				  <figcaption>CBbunny.dae ... sampling rate image (red=high, blue=low)</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="images/spheres_adaptive.png" width="400px"/>
-				  <figcaption>CBspheres_lambertian.dae — adaptive sampling render</figcaption>
+				  <figcaption>CBspheres_lambertian.dae ... adaptive sampling render</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="images/spheres_adaptive_rate.png" width="400px"/>
-				  <figcaption>CBspheres_lambertian.dae — sampling rate image</figcaption>
+				  <figcaption>CBspheres_lambertian.dae ... sampling rate image</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
 
 		<p>
-		The sampling rate images are really satisfying to look at in my opinion. You can clearly see that the flat walls and ceiling are almost entirely blue — they converge super quickly because the lighting there is simple and consistent. The bunny and spheres are red and green because those areas have complex lighting, shadows, and indirect illumination that requires a lot more samples to converge. The shadow regions under the objects are also red for the same reason. This is exactly the kind of behavior adaptive sampling is supposed to produce, and seeing it work correctly was a great way to wrap up the assignment.
+		The sampling rate images are really satisfying to look at in my opinion. You can clearly see that the flat walls and ceiling are almost entirely blue, they converge super quickly because the lighting there is simple and consistent. The bunny and spheres are red and green because those areas have complex lighting, shadows, and indirect illumination that requires a lot more samples to converge. The shadow regions under the objects are also red for the same reason. This is exactly the kind of behavior adaptive sampling is supposed to produce, and seeing it work correctly was a great way to wrap up the assignment.
 		</p>
 
 		<h2>(Optional) Part 6: Extra Credit Opportunities</h2>
