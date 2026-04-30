@@ -1,4 +1,4 @@
-  <html>
+<html>
 	<head>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -32,15 +32,11 @@
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
-
-		<br>
-
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/sp25">cs184.eecs.berkeley.edu/sp25</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw-webpages-StylishSocks/hw4/">https://cal-cs184-student.github.io/hw-webpages-StylishSocks/hw4/</a>
 
 		<figure>
 			<img src="clothsim.png" alt="Cloth draped over sphere" style="width:70%"/>
-			<figcaption>Cloth draped over a sphere using Phong shading.</figcaption>
+			<figcaption>Cloth draped over a sphere using Normal shading.</figcaption>
 		</figure>
 
 		<h2>Overview</h2>
@@ -56,7 +52,7 @@
 
 		<h2>Part 1: Masses and springs</h2>
 		<p>
-			To build the cloth grid we iterate over a <code>num_height_points × num_width_points</code> array of point masses stored in row-major order. For a horizontal cloth orientation the masses are placed at evenly spaced positions in the xz plane at y = 1; for a vertical cloth they are placed in the xy plane with a small random z offset between −1/1000 and 1/1000 to break symmetry. Any mass whose (x, y) grid index appears in the pinned list is marked as pinned and will not move during simulation.
+			To build the cloth grid we iterate over a <code>num_height_points x num_width_points</code> array of point masses stored in row-major order. For a horizontal cloth orientation the masses are placed at evenly spaced positions in the xz plane at y = 1; for a vertical cloth they are placed in the xy plane with a small random z offset between -1/1000 and 1/1000 to break symmetry. Any mass whose (x, y) grid index appears in the pinned list is marked as pinned and will not move during simulation.
 		</p>
 		<p>
 			Once all masses are placed we add springs. Structural springs connect each mass to its left neighbor and the one directly above it, keeping the overall grid together. Shearing springs connect diagonally to the upper-left and upper-right neighbors, resisting shear deformation. Bending springs connect two positions to the left and two positions above, providing resistance to out-of-plane bending — these use a spring constant scaled down to 20% of the main ks so they are weaker than the structural springs.
@@ -82,7 +78,7 @@
 				</td>
 				<td style="text-align: center;">
 				  <img src="part1_pinned2.png" width="400px"/>
-				  <figcaption>scene/pinned2.json at rest with all constraints.</figcaption>
+				  <figcaption>scene/pinned2.json at rest with all constraints, Phong shading.</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -97,7 +93,7 @@
 		<p>
 			Position updates use Verlet integration with a damping term:
 			\[ x_{t+dt} = x_t + (1 - d)(x_t - x_{t-dt}) + a_t \cdot dt^2 \]
-			where \( d \) is the damping percentage divided by 100. After integration we apply the Provot constraint: for any spring whose length exceeds 1.1× its rest length we correct the two endpoint positions to bring them back within that bound, distributing the correction equally between the two masses (or entirely to the free mass if one end is pinned).
+			where \( d \) is the damping percentage divided by 100. After integration we apply the Provot constraint: for any spring whose length exceeds 1.1x its rest length we correct the two endpoint positions to bring them back within that bound, distributing the correction equally between the two masses (or entirely to the free mass if one end is pinned).
 		</p>
 
 		<h3>Effect of spring constant (ks)</h3>
@@ -134,7 +130,7 @@
 				</td>
 				<td style="text-align: center;">
 				  <img src="part2_high_damping.png" width="400px"/>
-				  <figcaption>High damping — cloth descends smoothly to rest.</figcaption>
+				  <figcaption>High damping (1.0%) — cloth descends slowly and smoothly to rest.</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -182,7 +178,7 @@
 
 		<h2>Part 4: Handling self-collisions</h2>
 		<p>
-			The naive approach of checking all pairs of point masses for proximity is O(n²) and too slow for real-time use, so we use spatial hashing. At each timestep we build a hash map from 3D box keys to lists of point masses. Each position is mapped to a box of dimensions \( w \times h \times t \) where \( w = 3 \cdot width / num\_width\_points \), \( h = 3 \cdot height / num\_height\_points \), and \( t = \max(w, h) \). A unique float key is computed from the box coordinates using large prime coefficients to minimize collisions.
+			The naive approach of checking all pairs of point masses for proximity is O(n^2) and too slow for real-time use, so we use spatial hashing. At each timestep we build a hash map from 3D box keys to lists of point masses. Each position is mapped to a box of dimensions \( w \times h \times t \) where \( w = 3 \cdot width / num\_width\_points \), \( h = 3 \cdot height / num\_height\_points \), and \( t = \max(w, h) \). A unique float key is computed from the box coordinates using large prime coefficients to minimize collisions.
 		</p>
 		<p>
 			For each point mass we look up the other masses in the same hash bucket. If any candidate is within \( 2 \times thickness \) distance, we compute a correction vector that pushes the point mass away to restore that minimum separation. All pairwise correction vectors are averaged and then scaled down by the number of simulation steps, which smooths the corrections and improves stability.
@@ -207,7 +203,7 @@
 				</td>
 				<td style="text-align: center;">
 				  <img src="part4_high_density.png" width="400px"/>
-				  <figcaption>High density — cloth falls faster and piles more compactly.</figcaption>
+				  <figcaption>High density (150 g/cm^2) — cloth falls faster and piles more compactly.</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -235,7 +231,7 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="part5_ambient.png" width="400px"/>
-				  <figcaption>Ambient component only.</figcaption>
+				  <figcaption>Ambient component only (ka=0.1).</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="part5_diffuse.png" width="400px"/>
@@ -249,7 +245,7 @@
 				</td>
 				<td style="text-align: center;">
 				  <img src="part5_phong.png" width="400px"/>
-				  <figcaption>Full Blinn-Phong model.</figcaption>
+				  <figcaption>Full Blinn-Phong model (ambient + diffuse + specular).</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -275,7 +271,7 @@
 			Displacement mapping goes further by actually moving vertex positions in the vertex shader along the original surface normal, scaled by the height map value and a height scaling factor \( k_h \). This produces real geometric detail visible in silhouettes, not just in shading. The same bump-mapped normal computation is then applied in the fragment shader for consistent shading.
 		</p>
 		<p>
-			The difference between the two is most visible at the sphere's silhouette and at low mesh resolution. With a coarse mesh (-o 16 -a 16) bump mapping still shows convincing shading but the silhouette remains perfectly round, while displacement mapping produces a visibly bumpy outline. At high resolution (-o 128 -a 128) both look similar in shading quality but displacement still shows more accurate geometry.
+			The difference between the two is most visible at the sphere's silhouette and at low mesh resolution. With a coarse mesh (-o 16 -a 16) bump mapping still shows convincing shading but the silhouette remains perfectly round, while displacement mapping produces a visibly bumpy outline. At high resolution (-o 128 -a 128) the displacement is smoother and more detailed compared to the blocky low-res version.
 		</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
@@ -283,21 +279,21 @@
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="part5_bump_cloth.png" width="400px"/>
-				  <figcaption>Bump mapping on the cloth.</figcaption>
+				  <figcaption>Bump mapping on the cloth (Normal=2, Height=1).</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="part5_bump_sphere.png" width="400px"/>
-				  <figcaption>Bump mapping on the sphere.</figcaption>
+				  <figcaption>Bump mapping on the sphere — silhouette remains round.</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
 				  <img src="part5_displacement_16.png" width="400px"/>
-				  <figcaption>Displacement mapping, sphere at -o 16 -a 16.</figcaption>
+				  <figcaption>Displacement mapping at -o 16 -a 16 — blocky, visible geometry change.</figcaption>
 				</td>
 				<td style="text-align: center;">
 				  <img src="part5_displacement_128.png" width="400px"/>
-				  <figcaption>Displacement mapping, sphere at -o 128 -a 128.</figcaption>
+				  <figcaption>Displacement mapping at -o 128 -a 128 — smoother, finer detail.</figcaption>
 				</td>
 			  </tr>
 			</table>
